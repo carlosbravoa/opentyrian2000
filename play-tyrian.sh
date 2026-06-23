@@ -8,7 +8,8 @@
 #
 # Extra args are passed through, e.g.:  ./play-tyrian.sh ttyACM0 --no-xmas
 #
-# For a standalone music jukebox (no game), see the tyrian-retrowave project.
+# For a standalone music jukebox (no game), see the separate project:
+#   https://github.com/carlosbravoa/tyrian-retrowave-player
 
 set -e
 cd "$(dirname "$0")"

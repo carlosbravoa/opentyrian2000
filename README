@@ -70,8 +70,9 @@ Notes:
   silently (no sound or garbled output).
 * You must have permission to access the serial device (on most distributions,
   add your user to the "dialout" group).
-* This feature is Linux-only. There is also a separate standalone music player
-  (a jukebox) for the board in the "tyrian-retrowave" project.
+* This feature is Linux-only. A separate, self-contained standalone music
+  player (a jukebox) for the board is available at:
+    https://github.com/carlosbravoa/tyrian-retrowave-player
 
 For convenience, the included play-tyrian.sh script wraps the flag:
   ./play-tyrian.sh            # game on the board (default ttyACM0)
