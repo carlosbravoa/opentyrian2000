@@ -44,6 +44,40 @@ punching.
 
 Note that Network play has not been tested for OpenTyrian2000.
 
+== RetroWave OPL3 Express (FM Music on Real Hardware) ==========================
+
+On Linux, OpenTyrian2000 can stream its music to a RetroWave OPL3 Express
+board -- a real Yamaha YMF262 (OPL3) FM chip on a USB-serial bridge -- instead
+of the built-in software emulator. Because Tyrian's own music driver produces
+the OPL register writes, the result is the exact instruments, timing, and loop
+points played on genuine FM hardware.
+
+syntax:
+  opentyrian2000 --retrowave=DEVICE
+
+where DEVICE is the serial device for the board (typically ttyACM0). Use a
+single dash (--retrowave=-) for a dry run that exercises the feature without
+any hardware.
+
+example:
+  opentyrian2000 --retrowave=ttyACM0
+
+The music plays through the board while sound effects continue to play on the
+PC. Without the flag, the game uses the software emulator as usual.
+
+Notes:
+* The board runs at 2,000,000 baud; this is mandatory. A wrong baud rate fails
+  silently (no sound or garbled output).
+* You must have permission to access the serial device (on most distributions,
+  add your user to the "dialout" group).
+* This feature is Linux-only. There is also a separate standalone music player
+  (a jukebox) for the board in the "tyrian-retrowave" project.
+
+For convenience, the included play-tyrian.sh script wraps the flag:
+  ./play-tyrian.sh            # game on the board (default ttyACM0)
+  ./play-tyrian.sh ttyACM1    # game on a different device
+  ./play-tyrian.sh -          # game with no board (normal emulated audio)
+
 == Links =======================================================================
 
 * For OpenTyrian2000
