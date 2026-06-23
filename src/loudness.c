@@ -23,6 +23,7 @@
 #include "nortsong.h"
 #include "opentyr.h"
 #include "params.h"
+#include "retrowave_serial.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -173,6 +174,12 @@ static void audioCallback(void *userdata, Uint8 *stream, int size)
 
 	Sint32 musicVolumeFactor = volumeFactorTable[musicVolume];
 	musicVolumeFactor *= 2;  // OPL emulator is too quiet
+
+	// When the music is streaming to the real OPL3 board, the emulator still
+	// runs (it drives lds_update timing via the sample clock), but we mute its
+	// PC output so we don't hear it doubled.  Sound effects stay on the PC.
+	if (retrowave_active)
+		musicVolumeFactor = 0;
 
 	if (samples_disabled && !music_disabled)
 	{

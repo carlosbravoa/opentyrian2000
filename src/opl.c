@@ -24,6 +24,7 @@
  * Ken Silverman's official web site: "http://www.advsys.net/ken"
  */
 #include "opl.h"
+#include "retrowave_serial.h"
 
 #include <math.h>
 #include <stdbool.h>
@@ -752,6 +753,10 @@ void adlib_init(Bit32u samplerate) {
 
 
 void adlib_write(Bitu idx, Bit8u val) {
+	// Mirror every register write to the RetroWave OPL3 board, if enabled.
+	if (retrowave_active)
+		retrowave_write((unsigned int)idx, val);
+
 	Bit32u second_set = idx&ARC_SECONDSET_MASK;
 	adlibreg[idx] = val;
 

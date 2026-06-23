@@ -24,6 +24,7 @@
 #include "loudness.h"
 #include "network.h"
 #include "opentyr.h"
+#include "retrowave_serial.h"
 #include "varz.h"
 #include "xmas.h"
 
@@ -58,6 +59,8 @@ void JE_paramCheck(int argc, char *argv[])
 		{ 'p', 'p', "net-port",          true },
 		{ 'd', 'd', "net-delay",         true },
 		
+		{ 258, 0,   "retrowave",         true },
+
 		{ 'X', 'X', "xmas",              false },
 		{ 'c', 'c', "constant",          false },
 		{ 'k', 'k', "death",             false },
@@ -98,7 +101,9 @@ void JE_paramCheck(int argc, char *argv[])
 			       "  --net-player-number=NUMBER   Sets local player number in a networked game\n"
 			       "                               (1 or 2)\n"
 			       "  -p, --net-port=PORT          Local port to bind (default is 1333)\n"
-			       "  -d, --net-delay=FRAMES       Set lag-compensation delay (default is 1)\n", argv[0]);
+			       "  -d, --net-delay=FRAMES       Set lag-compensation delay (default is 1)\n\n"
+			       "  --retrowave=DEV              Stream music to a RetroWave OPL3 Express\n"
+			       "                               (e.g. ttyACM0, or - for a dry run)\n", argv[0]);
 			exit(0);
 			break;
 			
@@ -190,6 +195,14 @@ void JE_paramCheck(int argc, char *argv[])
 			}
 			break;
 		}
+		case 258: // --retrowave
+			if (!retrowave_open(option.arg))
+			{
+				fprintf(stderr, "%s: error: could not open RetroWave device '%s'\n", argv[0], option.arg);
+				exit(EXIT_FAILURE);
+			}
+			break;
+
 		case 'X':
 			override_xmas = true;
 			xmas = true;
