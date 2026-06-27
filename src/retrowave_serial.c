@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <termios.h>
 #include <time.h>
@@ -117,6 +118,15 @@ void retrowave_reset(void)
 	rw_sleep_ms(10);
 }
 
+// Silence the board on process exit no matter how we got there — the in-game
+// SDL_QUIT handler calls exit() directly, so without this the chip keeps
+// sounding its last key-on notes forever.  Leaves retrowave_active untouched so
+// a config save during shutdown still records the user's enabled state.
+static void rw_silence_atexit(void)
+{
+	retrowave_reset();
+}
+
 bool retrowave_open(const char *dev)
 {
 	if (dev == NULL || dev[0] == '\0')
@@ -130,8 +140,11 @@ bool retrowave_open(const char *dev)
 		return true;
 	}
 
-	// Remember this device so the in-game menu can re-open it later.
-	snprintf(retrowave_device, sizeof(retrowave_device), "%s", dev);
+	// Remember this device so the in-game menu can re-open it later.  Guard
+	// against a self-overlapping copy when the caller passes retrowave_device
+	// itself (config load / menu toggle) — snprintf onto its own buffer is UB.
+	if (dev != retrowave_device)
+		snprintf(retrowave_device, sizeof(retrowave_device), "%s", dev);
 
 	char path[256];
 	if (strncmp(dev, "/dev/", 5) == 0)
@@ -170,12 +183,23 @@ bool retrowave_open(const char *dev)
 
 	retrowave_active = true;
 	retrowave_reset();
+
+	static bool atexit_registered = false;
+	if (!atexit_registered)
+	{
+		atexit(rw_silence_atexit);
+		atexit_registered = true;
+	}
+
 	fprintf(stderr, "retrowave: streaming OPL3 to %s @ 2000000 baud\n", path);
 	return true;
 }
 
 void retrowave_close(void)
 {
+	// Silence held notes before disconnecting, otherwise the board keeps
+	// sounding its last key-on registers after we let go of the port.
+	retrowave_reset();
 	if (rw_fd >= 0)
 	{
 		close(rw_fd);
