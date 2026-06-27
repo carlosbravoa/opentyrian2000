@@ -65,6 +65,13 @@ example:
 The music plays through the board while sound effects continue to play on the
 PC. Without the flag, the game uses the software emulator as usual.
 
+You can also enable the board from inside the game, without the flag: open
+Setup -> Sound and switch "RetroWave OPL3" to On. It can be toggled on and off
+at any time, even while music is playing, and the choice is remembered between
+runs (saved in opentyrian.cfg). The flag is still useful for selecting a
+non-default device or for a dry run; when given, it also becomes the device the
+in-game toggle uses.
+
 Notes:
 * The board runs at 2,000,000 baud; this is mandatory. A wrong baud rate fails
   silently (no sound or garbled output).
