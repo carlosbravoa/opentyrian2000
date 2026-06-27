@@ -44,6 +44,11 @@ void adlib_getsample(Bit16s* sndptr, Bits numsamples);
 Bitu adlib_reg_read(Bitu port);
 void adlib_write_index(Bitu port, Bit8u val);
 
+// Re-send the entire cached OPL register state to the RetroWave board.  Used
+// when the board is enabled mid-song so playback resumes seamlessly instead of
+// waiting for each voice to be re-armed by the next note.  No-op if inactive.
+void adlib_resync_retrowave(void);
+
 #define opl_init() adlib_init(audioSampleRate)
 #define opl_write(reg, val) adlib_write(reg, val)
 #define opl_update(buf, num) adlib_getsample(buf, num)

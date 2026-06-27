@@ -752,6 +752,17 @@ void adlib_init(Bit32u samplerate) {
 
 
 
+void adlib_resync_retrowave(void) {
+	if (!retrowave_active)
+		return;
+
+	// Reset the chip, then replay the cached register set in index order so the
+	// board mirrors the current playback state.
+	retrowave_reset();
+	for (unsigned int i = 0; i < sizeof(adlibreg); ++i)
+		retrowave_write(i, adlibreg[i]);
+}
+
 void adlib_write(Bitu idx, Bit8u val) {
 	// Mirror every register write to the RetroWave OPL3 board, if enabled.
 	if (retrowave_active)

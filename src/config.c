@@ -26,6 +26,7 @@
 #include "nortsong.h"
 #include "opentyr.h"
 #include "player.h"
+#include "retrowave_serial.h"
 #include "varz.h"
 #include "vga256d.h"
 #include "video.h"
@@ -280,8 +281,21 @@ bool load_opentyrian_config(void)
 		}
 	}
 
+	section = config_find_section(config, "retrowave", NULL);
+	if (section != NULL)
+	{
+		const char *device;
+		if (config_get_string_option(section, "device", &device) && device[0] != '\0')
+			snprintf(retrowave_device, sizeof(retrowave_device), "%s", device);
+
+		// Auto-enable, unless the command line already opened a board.
+		bool enabled = false;
+		if (config_get_bool_option(section, "enabled", &enabled) && enabled && !retrowave_active)
+			retrowave_open(retrowave_device);
+	}
+
 	fclose(file);
-	
+
 	return true;
 }
 
@@ -326,6 +340,13 @@ bool save_opentyrian_config(void)
 	
 	for (size_t i = 0; i < COUNTOF(mouseSettings); ++i)
 		config_set_string_option(section, mouseSettingNames[i], mouseSettingValues[mouseSettings[i] - 1]);
+
+	section = config_find_or_add_section(config, "retrowave", NULL);
+	if (section == NULL)
+		exit(EXIT_FAILURE);  // out of memory
+
+	config_set_string_option(section, "device", retrowave_device);
+	config_set_bool_option(section, "enabled", retrowave_active, OFF_ON);
 
 	FILE *file = dir_fopen(get_user_directory(), "opentyrian.cfg", "w");
 	if (file == NULL)

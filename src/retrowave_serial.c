@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 bool retrowave_active = false;
+char retrowave_device[64] = "ttyACM0";
 
 static int rw_fd = -1;
 static bool rw_dummy = false;  // dry-run: frame but don't write to hardware
@@ -128,6 +129,9 @@ bool retrowave_open(const char *dev)
 		fprintf(stderr, "retrowave: dry-run mode (no hardware)\n");
 		return true;
 	}
+
+	// Remember this device so the in-game menu can re-open it later.
+	snprintf(retrowave_device, sizeof(retrowave_device), "%s", dev);
 
 	char path[256];
 	if (strncmp(dev, "/dev/", 5) == 0)
