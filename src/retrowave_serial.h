@@ -22,6 +22,11 @@
 // successful retrowave_open(); checked on the hot path in adlib_write().
 extern bool retrowave_active;
 
+// Last/preferred device name (without the "/dev/" prefix), remembered across a
+// CLI launch and the config file so the in-game Sound menu can re-open the same
+// board.  Defaults to "ttyACM0".
+extern char retrowave_device[64];
+
 // Open the board.  dev may be given with or without the "/dev/" prefix; pass
 // "-" for a dry run (frames are discarded, useful for testing without hardware).
 // Performs a full chip reset on success.  Returns true on success; on failure

@@ -37,9 +37,11 @@
 #include "nortsong.h"
 #include "nortvars.h"
 #include "opentyrian_version.h"
+#include "opl.h"
 #include "palette.h"
 #include "params.h"
 #include "picload.h"
+#include "retrowave_serial.h"
 #include "sprite.h"
 #include "tyrian2.h"
 #include "varz.h"
@@ -97,6 +99,18 @@ static const char *getScalingModePickerItem(size_t i, char *buffer, size_t buffe
 	return scaling_mode_names[i];
 }
 
+static size_t getRetrowavePickerItemsCount(void)
+{
+	return 2;
+}
+
+static const char *getRetrowavePickerItem(size_t i, char *buffer, size_t bufferSize)
+{
+	(void)buffer, (void)bufferSize;
+
+	return i == 0 ? "Off" : "On";
+}
+
 void setupMenu(void)
 {
 	typedef enum
@@ -112,6 +126,7 @@ void setupMenu(void)
 		MENU_ITEM_SCALING_MODE,
 		MENU_ITEM_MUSIC_VOLUME,
 		MENU_ITEM_SOUND_VOLUME,
+		MENU_ITEM_RETROWAVE,
 	} MenuItemId;
 
 	typedef enum
@@ -164,6 +179,7 @@ void setupMenu(void)
 			.items = {
 				{ MENU_ITEM_MUSIC_VOLUME, "Music Volume", "Change volume with the left/right arrow keys." },
 				{ MENU_ITEM_SOUND_VOLUME, "Sound Volume", "Change volume with the left/right arrow keys." },
+				{ MENU_ITEM_RETROWAVE, "RetroWave OPL3:", "Stream music to a RetroWave OPL3 Express board.", getRetrowavePickerItemsCount, getRetrowavePickerItem },
 				{ MENU_ITEM_DONE, "Done", "Return to the previous menu." },
 				{ -1 }
 			},
@@ -259,6 +275,10 @@ void setupMenu(void)
 
 			case MENU_ITEM_SCALING_MODE:
 				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, scaling_mode_names[scaling_mode], normal_font, left_aligned, 15, -3 + (selected ? 2 : 0) + (disabled ? -4 : 0), false, 2);
+				break;
+
+			case MENU_ITEM_RETROWAVE:
+				draw_font_hv_shadow(VGAScreen, xMenuItemValue, y, retrowave_active ? "On" : "Off", normal_font, left_aligned, 15, -3 + (selected ? 2 : 0) + (disabled ? -4 : 0), false, 2);
 				break;
 
 			case MENU_ITEM_MUSIC_VOLUME:
@@ -376,6 +396,7 @@ void setupMenu(void)
 									case MENU_ITEM_DISPLAY:
 									case MENU_ITEM_SCALER:
 									case MENU_ITEM_SCALING_MODE:
+									case MENU_ITEM_RETROWAVE:
 									{
 										action = true;
 										break;
@@ -584,6 +605,14 @@ void setupMenu(void)
 					pickerSelectedIndex = scaling_mode;
 					break;
 				}
+				case MENU_ITEM_RETROWAVE:
+				{
+					JE_playSampleNum(S_CLICK);
+
+					currentPicker = selectedMenuItemId;
+					pickerSelectedIndex = retrowave_active ? 1 : 0;
+					break;
+				}
 				case MENU_ITEM_MUSIC_VOLUME:
 				{
 					JE_playSampleNum(S_CLICK);
@@ -733,6 +762,22 @@ void setupMenu(void)
 				case MENU_ITEM_SCALING_MODE:
 				{
 					scaling_mode = pickerSelectedIndex;
+					break;
+				}
+				case MENU_ITEM_RETROWAVE:
+				{
+					if (pickerSelectedIndex == 1)
+					{
+						// Enable: open the remembered board and replay the
+						// current register state so music continues seamlessly.
+						if (!retrowave_active && retrowave_open(retrowave_device))
+							adlib_resync_retrowave();
+					}
+					else
+					{
+						if (retrowave_active)
+							retrowave_close();
+					}
 					break;
 				}
 				default:
